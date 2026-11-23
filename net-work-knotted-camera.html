@@ -1,0 +1,944 @@
+<meta charset="utf-8">
+<title>Net / Work Knotted Camera</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=DynaPuff:wght@600;700&family=Nunito:wght@400;600;700;800&family=Gaegu:wght@400;700&family=IBM+Plex+Mono:wght@400;600&display=swap">
+<style>
+/* Layout: two screens on a pale-sky basket-weave ground. Intake = sketchy prompt cards.
+   Mending = one narrow column: a zoomed window onto one hole, the person's name, and a few choices.
+   Single light look on purpose: pastel toy-shop palette with thin, wobbly hand-drawn outlines. */
+:root{
+  color-scheme:light;
+  --sky:#ddeef8; --cream:#fffaf1; --paper:#fbf3e4; --wicker:#ecd5b0; --wicker-line:#a4744a;
+  --ink:#33313b; --ink-soft:#77727f; --red:#f2582f; --pink:#f6a9c0; --pink-soft:#fde2ea;
+  --blue:#2a6fd6; --blue-soft:#d7e6fb; --yellow:#f7c04a; --yellow-soft:#fdf0c8; --green:#4fae6a; --mint-soft:#dff3e4;
+  --f-display:"DynaPuff","Nunito",system-ui,sans-serif;
+  --f-body:"Nunito","Segoe UI",system-ui,sans-serif;
+  --f-hand:"Gaegu","Segoe Print","Comic Sans MS",cursive;
+  --f-mono:"IBM Plex Mono",ui-monospace,Consolas,monospace;
+  --r-sketch:16px 20px 14px 22px / 20px 14px 22px 16px;
+}
+[hidden]{display:none!important}
+body{color:var(--ink);font-family:var(--f-body);font-size:15.5px;line-height:1.5;
+  background-color:var(--sky);
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='56' height='56'%3E%3Cg fill='none' stroke='%23c7e0f0' stroke-width='2.2' stroke-linecap='round'%3E%3Cpath d='M4 6q12 -1.5 20 0M4 14q12 1.5 20 0M4 22q12 -1.5 20 0'/%3E%3Cpath d='M32 34q12 -1.5 20 0M32 42q12 1.5 20 0M32 50q12 -1.5 20 0'/%3E%3Cpath d='M34 4q-1.5 12 0 20M42 4q1.5 12 0 20M50 4q-1.5 12 0 20'/%3E%3Cpath d='M6 32q-1.5 12 0 20M14 32q1.5 12 0 20M22 32q-1.5 12 0 20'/%3E%3C/g%3E%3C/svg%3E");
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:28px 56px}
+.wrap{max-width:1120px;margin:0 auto;display:grid;gap:24px}
+.intake{display:grid;gap:20px;min-width:0}
+
+/* hand-drawn outline: a wobbly border painted on a pseudo-element so text stays crisp */
+.sketch{position:relative;background:var(--cream);border-radius:var(--r-sketch)}
+.sketch::before{content:"";position:absolute;inset:0;border:1.4px solid var(--ink);border-radius:var(--r-sketch);filter:url(#wobble);pointer-events:none}
+
+header{display:grid;gap:6px}
+.titlerow{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+h1{position:relative}
+h1::after{content:attr(data-text);position:absolute;left:0;top:0;color:transparent;-webkit-text-stroke:1px var(--ink);transform:translate(-1.5px,0);pointer-events:none;white-space:nowrap}
+h1 .slash{color:var(--blue)}
+.subtitle{font-family:var(--f-hand);font-size:26px;line-height:1.15;color:var(--blue);margin:0}
+h1{font-family:var(--f-display);font-weight:700;font-size:clamp(40px,7vw,72px);line-height:.95;margin:0;color:var(--red);letter-spacing:-.01em;text-wrap:balance}
+h1 .dot{color:var(--blue)}
+.deco{width:54px;height:50px;flex:none;transform:rotate(-8deg);overflow:visible}
+.lede{max-width:52ch;margin:0;font-family:var(--f-hand);font-size:26px;line-height:1.15;color:var(--ink)}
+.lede-group{display:grid;gap:6px}
+.choice.mood{justify-items:center;padding:8px 12px;min-width:86px;background:var(--cream)}
+.choice.mood b{font-family:var(--f-hand);font-weight:700;font-size:19px}
+.choice small,#camBtn small{font-family:var(--f-hand);font-weight:400;font-size:18px;line-height:1.1;color:var(--ink-soft)}
+.choice.tight small{color:var(--red)}
+#camBtn{display:grid;gap:0;text-align:left}
+.hint{display:none!important}
+.zone-note{margin:0;font-family:var(--f-hand);font-size:20px;line-height:1.2;color:var(--ink)}
+.after-top{display:flex;justify-content:center}
+.support{padding:16px 18px;display:grid;gap:10px}
+.support-q{margin:0;font-weight:800;font-size:17px;color:var(--red)}
+.support-q span{font-family:var(--f-body);font-weight:800;font-size:15px;color:var(--blue);margin-left:6px}
+.sup-row{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.sup-name{font-family:var(--f-hand);font-size:26px;color:var(--blue);min-width:7ch}
+.sup{font-family:var(--f-hand);font-size:19px;line-height:1.1;border:0;border-radius:999px;padding:2px 12px 3px 8px;background:var(--cream);color:var(--ink-soft);cursor:pointer;position:relative;display:inline-flex;align-items:center;gap:6px}
+.sup::before{content:"";position:absolute;inset:0;border:1.1px solid var(--ink);border-radius:inherit;filter:url(#wobble);pointer-events:none;opacity:.5}
+.sup i{width:11px;height:11px;border-radius:50%;border:1.2px solid var(--ink);background:transparent;flex:none}
+.sup[aria-pressed="true"]{color:var(--ink)}
+.sup[aria-pressed="true"]::before{opacity:1}
+.legend{display:flex;gap:6px 14px;flex-wrap:wrap;justify-content:center;font-family:var(--f-hand);font-size:19px;color:var(--ink)}
+.legend span{display:inline-flex;align-items:center;gap:6px}
+.legend i{width:11px;height:11px;border-radius:50%;border:1.2px solid var(--ink)}
+.lede em{font-style:normal;font-weight:700;color:var(--red)}
+.label{font-size:12px;text-transform:uppercase;letter-spacing:.12em;color:var(--ink-soft);font-weight:800}
+.note{font-size:13.5px;color:var(--ink-soft);margin:0}
+.row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.btn{font:inherit;font-weight:800;font-size:15px;border:0;border-radius:var(--r-sketch);padding:11px 20px;cursor:pointer;background:var(--red);color:#fff;position:relative}
+.btn::before,.choice::before,.chip::before,.seg button::before,.pill::before{content:"";position:absolute;inset:0;border:1.3px solid var(--ink);border-radius:inherit;filter:url(#wobble);pointer-events:none}
+.btn.ghost{background:var(--cream);color:var(--ink)}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+.btn:not(:disabled):hover{transform:translateY(-1px) rotate(-.5deg)}
+button:focus-visible,input:focus-visible{outline:2.5px dashed var(--blue);outline-offset:3px}
+
+/* intake */
+.prompts{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,300px),1fr));gap:16px}
+.prompt{padding:16px 18px;display:grid;gap:6px}
+.prompt:nth-child(3n+1){transform:rotate(-.4deg)} .prompt:nth-child(3n+2){transform:rotate(.35deg)} .prompt:nth-child(3n){transform:rotate(-.15deg)}
+.prompt label{font-weight:800;font-size:17px;line-height:1.3;color:var(--red)}
+.prompt input{font-family:var(--f-hand);font-size:31px;line-height:1.1;width:100%;box-sizing:border-box;padding:4px 2px 8px;border:0;background:transparent;color:var(--blue);
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='48' height='4'%3E%3Cpath d='M0 2q12 -1.1 24 0t24 0' fill='none' stroke='%2333313b' stroke-width='1.1'/%3E%3C/svg%3E");
+  background-repeat:repeat-x;background-position:bottom left}
+.prompt .over{font-size:13px;color:var(--red);margin:0;font-weight:700}
+.free{transform:none!important}
+.free-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,110px),1fr));gap:4px 16px}
+.or{font-family:var(--f-hand);font-size:24px;color:var(--ink-soft);margin:0;text-align:center;display:flex;align-items:center;gap:12px}
+.help summary{cursor:pointer;list-style:none;padding:4px 0}
+.help summary::-webkit-details-marker{display:none}
+.help summary:hover span{color:var(--blue)}
+.help summary:focus-visible{outline:2.5px dashed var(--blue);outline-offset:3px;border-radius:8px}
+.chev{width:18px;height:18px;flex:none;transition:transform .2s}
+.help[open] .chev{transform:rotate(180deg)}
+.help-body{display:grid;gap:16px;padding-top:14px}
+.or::before,.or::after{content:"";flex:1;border-top:1.2px dashed var(--ink-soft)}
+.chips{display:flex;gap:6px 8px;flex-wrap:wrap;align-items:center}
+.chip{font-family:var(--f-hand);font-weight:400;font-size:20px;line-height:1.1;border:0;border-radius:999px;padding:2px 12px 3px;color:var(--ink);position:relative}
+.chip:nth-of-type(odd){transform:rotate(-1deg)} .chip:nth-of-type(even){transform:rotate(.8deg)}
+.chips-label{font-family:var(--f-hand);font-size:24px;color:var(--blue);margin-right:4px}
+.chip:nth-of-type(4n+1){background:var(--pink-soft)} .chip:nth-of-type(4n+2){background:var(--yellow-soft)}
+.chip:nth-of-type(4n+3){background:var(--blue-soft)} .chip:nth-of-type(4n){background:var(--mint-soft)}
+
+/* mending: one column */
+.mend{max-width:680px;width:100%;margin:0 auto;display:grid;gap:16px}
+.topline{display:flex;justify-content:flex-end;align-items:center;gap:10px;flex-wrap:wrap}
+#queue,#legend{display:none!important}
+.pill{position:relative;border-radius:999px;padding:4px 14px;font-weight:800;font-size:14px;background:var(--cream);font-variant-numeric:tabular-nums}
+.queue{display:flex;gap:8px;flex-wrap:wrap;align-items:center;min-width:0}
+.qitem{position:relative;display:flex;align-items:center;gap:6px;border-radius:999px;padding:3px 12px 3px 8px;background:var(--cream);font-family:var(--f-hand);font-size:19px;line-height:1.2}
+.qitem::before{content:"";position:absolute;inset:0;border:1.2px solid var(--ink);border-radius:inherit;filter:url(#wobble);pointer-events:none}
+.qitem i{width:11px;height:11px;transform:rotate(45deg);border:1.4px solid var(--green);background:var(--sky);flex:none}
+.qitem.now{background:var(--yellow);transform:translateY(-2px)}
+.qitem.done{opacity:.55}
+.qitem.weave i{background:var(--wicker);border-color:var(--ink)} .qitem.rushed i{background:var(--wicker);border-style:dashed;border-color:var(--ink)}
+.qitem.sticker i{background:var(--pink);border-color:var(--ink)} .qitem.letgo i{background:var(--paper);border-color:var(--ink-soft)}
+.qitem.missed{opacity:1;color:var(--red)} .qitem.missed i{border-color:var(--red)}
+.spool{position:relative;display:flex;align-items:center;gap:8px;border-radius:999px;padding:3px 14px 3px 6px;background:var(--cream);font-weight:800;font-variant-numeric:tabular-nums}
+.spool::before{content:"";position:absolute;inset:0;border:1.3px solid var(--ink);border-radius:inherit;filter:url(#wobble);pointer-events:none}
+.spool svg{width:40px;height:32px;display:block}
+.spool.low{}
+/* a tired bobbin trembles a little */
+.bob.shake{animation:shake .32s ease-in-out infinite;transform-box:fill-box;transform-origin:50% 50%}
+@keyframes shake{0%,100%{translate:0 0;rotate:0deg}20%{translate:-3.5px 1px;rotate:-6deg}40%{translate:3px -1px;rotate:5deg}60%{translate:-2.5px 1.2px;rotate:-4deg}80%{translate:2.5px -.8px;rotate:4.5deg}}
+@media (prefers-reduced-motion:reduce){.bob.shake{animation:none}}
+.choice.tight small{color:var(--red)}
+.stage{padding:10px;overflow:hidden}
+.frame{position:relative}
+#hand{position:absolute;inset:0;width:100%;height:100%;pointer-events:none}
+#vid{position:absolute;width:1px;height:1px;opacity:0;pointer-events:none}
+.cambar{display:flex;gap:10px;align-items:center;justify-content:center;flex-wrap:wrap}
+.cam-note{font-family:var(--f-hand);font-size:21px;margin:0;text-align:center;max-width:36ch}
+canvas{width:100%;height:auto;display:block;touch-action:none;border-radius:12px}
+.focus{display:grid;gap:12px;justify-items:center;text-align:center}
+.who{font-family:var(--f-hand);font-weight:700;font-size:58px;line-height:.9;margin:0;color:var(--blue)}
+.why{margin:0;color:var(--ink-soft);font-weight:700}
+.status{font-family:var(--f-hand);font-size:28px;line-height:1.2;margin:0;max-width:30ch;white-space:pre-line}
+.effort{display:grid;gap:6px;justify-items:center}
+.seg{display:flex;gap:6px}
+.seg button{font:inherit;font-weight:800;width:40px;padding:5px 0;border:0;background:var(--cream);color:var(--ink);border-radius:10px 12px 9px 13px;cursor:pointer;position:relative}
+.seg button[aria-checked="true"]{background:var(--yellow)}
+.seg button:disabled{cursor:default}
+.choices{display:flex;flex-wrap:wrap;gap:10px;justify-content:center}
+.choice{font:inherit;border:0;border-radius:var(--r-sketch);padding:10px 16px;cursor:pointer;color:var(--ink);position:relative;display:grid;gap:0;min-width:104px}
+.choice b{font-family:var(--f-display);font-weight:600;font-size:16px}
+.choice small{font-size:12.5px;color:var(--ink-soft);font-weight:700}
+.choice[data-a="weave"]{background:var(--blue-soft)} .choice[data-a="rushed"]{background:var(--yellow-soft)}
+.choice[data-a="borrow"]{background:var(--mint-soft)} .choice[data-a="sticker"]{background:var(--pink-soft)}
+.choice[data-a="letgo"]{background:var(--cream)}
+.choice:disabled{opacity:.4;cursor:not-allowed}
+.choice:not(:disabled):hover{transform:translateY(-2px) rotate(-.6deg)}
+.linkish{font-family:var(--f-hand);font-weight:700;font-size:20px;line-height:1.1;background:none;border:0;color:var(--ink-soft);text-decoration:underline;text-decoration-thickness:1.5px;text-underline-offset:5px;cursor:pointer}
+
+/* Layout: three columns while mending: the time on the left, the net in the middle, everything you do on the right */
+body{padding-block:16px 20px}
+.wrap{gap:12px;max-width:1440px}
+h1{font-size:clamp(34px,4.4vw,52px)}
+.deco{width:42px;height:39px}
+.mend{max-width:none;display:grid;grid-template-columns:auto minmax(0,1fr) minmax(260px,340px);gap:22px;align-items:center}
+.mend .topline{flex-direction:column;align-self:start;justify-content:flex-start}
+.mend .spool{flex-direction:column;padding:12px 12px 10px;border-radius:22px;gap:4px;font-size:15px;text-align:center}
+.mend .spool svg{width:64px;height:64px;overflow:visible}
+#timeTxt{font-family:var(--f-hand);font-weight:700;font-size:21px;line-height:1;color:var(--ink)}
+.mend .stage{width:100%;max-width:calc((100vh - 125px) * 1.45);justify-self:center}
+.side-col{display:grid;gap:14px;align-content:center}
+.side-col .focus{justify-items:start;text-align:left}
+.side-col .choices{justify-content:flex-start}
+.side-col .after-top{justify-content:flex-start}
+.side-col{align-self:stretch;display:flex;flex-direction:column;gap:14px}
+.side-col>:first-child{margin-top:auto}
+/* camera controls sit at the bottom of the right-hand column, level with the bottom of the net, on every screen */
+.side-col .cambar{margin-top:auto;flex-direction:column;align-items:flex-start;gap:6px}
+.side-col .cambar .cam-note{text-align:left}
+.side-col .cambar .cam-note:empty{display:none}
+.side-col .cambar .cam-note:empty{display:none}
+.cambar .btns{display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-start}
+.side-col .cam-note{text-align:left}
+.side-col .status{max-width:none}
+@media (max-width:980px){.mend{grid-template-columns:minmax(0,1fr)}.mend .topline{flex-direction:row;justify-content:flex-end}.mend .spool{flex-direction:row}.side-col .focus,.side-col .choices,.side-col .after-top,.side-col .cambar{justify-items:center;justify-content:center;text-align:center}}
+@media (prefers-reduced-motion:reduce){.btn:hover,.choice:hover{transform:none!important}}
+</style>
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <filter id="wobble" x="-5%" y="-5%" width="110%" height="110%">
+    <feTurbulence type="fractalNoise" baseFrequency="0.018" numOctaves="1" seed="4"/>
+    <feDisplacementMap in="SourceGraphic" scale="3"/>
+  </filter>
+  <filter id="wobble-heart" x="-10%" y="-10%" width="120%" height="120%">
+    <feTurbulence type="fractalNoise" baseFrequency="0.09" numOctaves="2" seed="7"/>
+    <feDisplacementMap in="SourceGraphic" scale="2.2"/>
+  </filter>
+</svg>
+
+<div class="wrap">
+  <header>
+    <div class="titlerow"><h1 data-text="Net / Work" aria-label="Net / Work">Net <span class="slash">/</span> Work</h1>
+    <svg class="deco" viewBox="0 0 56 52" aria-hidden="true">
+      <path d="M29 44C17 36 9 29 9.5 20.5 10 14 15.5 10.5 20.5 11.5c3.6.7 6.4 3.6 7.6 7 1.6-4.4 5.2-7.6 9.8-7.4 5.6.3 9.2 5.6 8 11.6-1.4 7.2-8 13-16.9 21.3z" fill="#f6a9c0" transform="translate(1.6 1.4)"/>
+      <path d="M28.5 43.2C16.8 35.4 8.2 28.6 8.6 20 9 13.4 14.4 9.6 19.6 10.6c3.8.8 6.6 4 7.9 7.6M27.8 18.6c1.4-4.6 5-8 9.8-7.9 6 .1 9.8 5.7 8.4 12-1.5 6.8-7.6 12.4-17 20.9" fill="none" stroke="#33313b" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" filter="url(#wobble-heart)"/>
+      <path d="M29.6 42.6c-8-5.8-17.4-12-19.6-19.2" fill="none" stroke="#33313b" stroke-width="1" stroke-linecap="round" opacity=".55" filter="url(#wobble-heart)"/>
+      <path d="M14.6 18.4c.6-2.6 2.4-4 4.6-4.2" fill="none" stroke="#fff" stroke-width="2.4" stroke-linecap="round"/>
+    </svg></div>
+  </header>
+
+  <!-- ============ INTAKE ============ -->
+  <section id="intake" class="intake">
+    <div class="lede-group">
+      <p class="lede">“Network” is made of two words: <em>net</em> and <em>work</em>. Most apps only show us the net: the 500+ connections and the follower counts. This one is about the work.</p>
+      <p class="lede">Before we start working, let's reflect on the people who hold your life together.</p>
+      <p class="lede">Choose up to five of the most important people in your life today.</p>
+    </div>
+    <div class="prompt sketch free">
+      <label for="f0">Already know who? Write them here.</label>
+      <div class="free-grid">
+        <input type="text" id="f0" autocomplete="off" aria-label="Person 1"><input type="text" id="f1" autocomplete="off" aria-label="Person 2"><input type="text" id="f2" autocomplete="off" aria-label="Person 3"><input type="text" id="f3" autocomplete="off" aria-label="Person 4"><input type="text" id="f4" autocomplete="off" aria-label="Person 5">
+      </div>
+      <p class="over" id="ofree" hidden>That's more than five people. Who matters more?</p>
+    </div>
+    <div class="support prompt sketch free" id="support" hidden>
+      <p class="support-q">What kind of support does each person give you?<span>optional</span></p>
+      <div id="supportList" class="lede-group"></div>
+    </div>
+    <details class="help" id="help">
+      <summary class="or"><span>Need help? Try these prompts.</span><svg class="chev" viewBox="0 0 16 16" aria-hidden="true"><path d="M4 6l4 4 4-4" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></summary>
+      <div class="help-body">
+        <div class="chips" id="chips"><span class="chips-label">Think about your</span></div>
+        <div class="prompts" id="prompts"></div>
+      </div>
+    </details>
+    <div class="row">
+      <button class="btn" id="begin" disabled>See my network</button>
+      <button class="btn ghost" id="example">Use example people</button>
+    </div>
+  </section>
+
+  <!-- ============ MENDING ============ -->
+  <section class="mend" id="mend" hidden>
+    <div class="topline">
+      <div class="queue" id="queue" aria-label="Who is waiting"></div>
+      <div class="spool" id="spool" title="Your time and energy, as twine">
+        <svg viewBox="0 0 88 88" aria-hidden="true" id="bobbin"></svg>
+        <span id="timeTxt">—</span>
+      </div>
+    </div>
+    <div class="stage sketch"><div class="frame"><canvas id="cv" width="1280" height="880" aria-label="A knotted net, close up on one person's knot"></canvas><canvas id="hand" width="1280" height="880" aria-hidden="true"></canvas><video id="vid" playsinline muted aria-hidden="true"></video></div></div>
+    <div class="legend" id="legend" hidden></div>
+
+    <div class="side-col">
+    <p class="zone-note" id="zoneNote" hidden>The four corners of the net are kinds of support: <span style="color:#e2709a">emotional</span>, <span style="color:#c98b12">practical</span>, <span style="color:#3f84d8">advice</span> and <span style="color:#3f9a5c">feedback</span>. Each person sits in the corner of the support they give you most.</p>
+    <div class="focus" id="focus">
+      <h2 class="who" id="who"></h2>
+      <p class="why" id="why"></p>
+      <p class="status" id="status" aria-live="polite"></p>
+      <p class="hint" id="hint" hidden></p>
+
+      <div id="mood" class="focus" hidden>
+        <div class="choices" id="moods"></div>
+      </div>
+
+      <div id="choose" class="focus">
+        <div class="choices" id="choices">
+          <button class="choice" data-a="sticker"><b>Tape</b><small id="c-sticker"></small></button>
+          <button class="choice" data-a="letgo"><b>Let go</b><small>cut it loose</small></button>
+        </div>
+        <button class="linkish" id="skip">Not now, come back later</button>
+      </div>
+
+      <div id="confirm" class="row" hidden>
+        <button class="btn" id="lgYes">Let go</button>
+        <button class="btn ghost" id="lgNo">Keep them</button>
+      </div>
+
+
+      <div id="end" class="focus" hidden>
+        <div class="row" style="justify-content:center">
+          <button class="btn" id="reset">Start over</button>
+        </div>
+      </div>
+    </div>
+    <div id="after" class="after-top" hidden><button class="btn" id="next">Next</button></div>
+    <div class="cambar"><p class="cam-note" id="camNote"></p><div class="btns"><button class="btn ghost" id="camBtn"><span>Tie with your hands on camera</span><small>(uses your webcam)</small></button><button class="btn ghost" id="practiceBtn" hidden>Practice again</button><button class="linkish" id="skipPractice" hidden>Skip practice</button></div></div>
+    </div>
+  </section>
+</div>
+
+<script>
+(()=>{
+const $=id=>document.getElementById(id);
+const css=n=>getComputedStyle(document.documentElement).getPropertyValue(n).trim();
+
+/* ================= INTAKE ================= */
+const PROMPTS=[
+  {q:'Who do you spend the most time with?',why:'most time together'},
+  {q:'Who’s an unexpected connection you’ve come to cherish?',why:'unexpected connection'},
+  {q:'Who had the biggest influence on who you are?',why:'shaped who you are'},
+  {q:'Who do you call when something goes wrong?',why:'your first call'},
+  {q:"Who’s your oldest friend?",why:'oldest friend'},
+  {q:'Who do you wish you talked to more?',why:'wish you talked more'},
+];
+const SUGGEST=['family members','friends','romantic partners','co-workers','classmates','teachers','mentors','neighbors','roommates'];
+const EXAMPLE=['Sam','Riley','Mom','Alex','Jordan','Mom'];
+const MAX=5;
+let lastFocus=null;
+$('prompts').innerHTML=PROMPTS.map((p,i)=>`<div class="prompt sketch"><label for="p${i}">${p.q}</label><input type="text" id="p${i}" autocomplete="off" ><p class="over" id="o${i}" hidden>That would be a sixth person. Five is the limit. Who matters more?</p></div>`).join('');
+SUGGEST.forEach(s=>{const b=document.createElement('span');b.className='chip';b.textContent=s;$('chips').appendChild(b)});
+PROMPTS.forEach((_,i)=>{const el=$('p'+i);el.addEventListener('focus',()=>lastFocus=el);el.addEventListener('input',refreshIntake)});
+const FREE=[0,1,2,3,4].map(i=>$('f'+i));
+FREE.forEach(el=>el.addEventListener('input',refreshIntake));
+function gather(){
+  const map=new Map(),over=[];let freeOver=false;
+  FREE.forEach(el=>{const v=el.value.trim();if(!v)return;const k=v.toLowerCase();
+    if(map.has(k))return;if(map.size<MAX)map.set(k,{name:v,why:['important to you']});else freeOver=true});
+  PROMPTS.forEach((p,i)=>{const v=$('p'+i).value.trim();if(!v)return;const k=v.toLowerCase();
+    if(map.has(k))map.get(k).why.push(p.why);
+    else if(map.size<MAX)map.set(k,{name:v,why:[p.why]});
+    else over.push(i)});
+  const people=[...map.values()].map(p=>p.why.length>1?{...p,why:p.why.filter(w=>w!=='important to you')}:p);
+  return {people,over,freeOver};
+}
+const SUP=[{k:'emotional',c:'#f28fb0'},{k:'practical',c:'#f2b84b'},{k:'advice',c:'#5b9be6'},{k:'feedback',c:'#5fb87a'}];
+const SUPC=Object.fromEntries(SUP.map(x=>[x.k,x.c]));
+const supportSel=new Map(); // lower-case name -> Set of support types
+const escH=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+function renderSupport(people){
+  $('support').hidden=!people.length;
+  // the support card follows wherever the names came from: under the free box, or under the prompts
+  {const sup=$('support'),freeCard=$('f0').closest('.prompt'),anchor=FREE.some(el=>el.value.trim())?freeCard:$('help');
+    if(anchor.nextElementSibling!==sup)anchor.after(sup)}
+  $('supportList').innerHTML=people.map(p=>{const key=p.name.toLowerCase(),sel=supportSel.get(key)||new Set();
+    return `<div class="sup-row"><span class="sup-name">${escH(p.name)}</span>`+SUP.map(x=>`<button type="button" class="sup" data-key="${escH(key)}" data-k="${x.k}" aria-pressed="${sel.has(x.k)}"><i style="${sel.has(x.k)?'background:'+x.c:''}"></i>${x.k}</button>`).join('')+'</div>'}).join('');
+  $('supportList').querySelectorAll('.sup').forEach(b=>b.addEventListener('click',()=>{
+    const key=b.dataset.key,set=supportSel.get(key)||new Set();set.has(b.dataset.k)?set.delete(b.dataset.k):set.add(b.dataset.k);supportSel.set(key,set);renderSupport(gather().people)}));
+}
+function refreshIntake(){const {people,over,freeOver}=gather();PROMPTS.forEach((_,i)=>$('o'+i).hidden=!over.includes(i));$('ofree').hidden=!freeOver;$('begin').disabled=!people.length;renderSupport(people)}
+$('example').addEventListener('click',()=>{$('help').open=true;EXAMPLE.forEach((n,i)=>$('p'+i).value=n);
+  for(const [n,t] of [['sam',['emotional']],['riley',['feedback']],['mom',['emotional','practical']],['alex',['advice']],['jordan',['emotional','practical']]])supportSel.set(n,new Set(t));
+  refreshIntake()});
+$('begin').addEventListener('click',()=>start(gather().people));
+refreshIntake();
+
+/* ================= NET ================= */
+const cv=$('cv'),cx=cv.getContext('2d');
+const W=640,H=440,S=cv.width/W;
+const NET={x0:70,x1:570,y0:84,y1:404},SP=56,ZOOM=2.4,REACH=17;
+const OVERVIEW={x:320,y:236,z:1};
+const TWINE=[480,640,800]; // centimetres of twine; you're handed one at random
+const CORD_CM=40,LETGO_CM=60;
+const HRS=cm=>{const h=Math.round(cm/CORD_CM*10)/10;return h+(h===1?' hour':' hours')}; // a careful cord is about 40 cm; letting someone go gives some twine back
+/* not everyone's hands are equally steady: shakier hands wobble the cord (which costs more twine)
+   and make the knots harder to hit */
+const STEADY=[{name:'',amp:0,reach:1},{name:'a little unsteady',amp:2.4,reach:.85},{name:'unsteady',amp:4.4,reach:.72}];
+const SEC_PER_STRAND=3;
+const need=(a,e)=>({weave:2*e,rushed:Math.max(1,Math.ceil(e/2))}[a]);
+const done={weave:'re-tied',rushed:'quick knot',sticker:'tape',letgo:'let go',open:'left open'};
+let endAt=0,twine=0,twine0=0,steady=STEADY[0],hoverPt=null,knots,cords,people,queue,cur,budget,left,running=false,lastTick=0,warned=false,action=null,drag=null,ended=false,intro=null;
+let cam={...OVERVIEW},target={...OVERVIEW};
+const now=()=>performance.now();
+const fmt=ms=>{const s=Math.round(ms/1000);return Math.floor(s/60)+':'+String(s%60).padStart(2,'0')};
+const say=t=>$('status').textContent=t;
+
+/* a diamond-mesh net: knots where the cords cross, each knot tied to four neighbours */
+function build(){
+  knots=[];const map=new Map();
+  for(let j=0;NET.y0+j*SP/2<=NET.y1;j++)for(let i=0;;i++){
+    const x=NET.x0+i*SP+(j%2?SP/2:0);if(x>NET.x1)break;
+    const k={i,j,x,y:NET.y0+j*SP/2,seed:i*37+j*13+5};
+    k.edge=x<NET.x0+SP*.7||x>NET.x1-SP*.7||j<2||NET.y0+(j+2)*SP/2>NET.y1;
+    knots.push(k);map.set(i+','+j,k);
+  }
+  const nb=(k,dj,side)=>map.get((k.j%2?(side<0?k.i:k.i+1):(side<0?k.i-1:k.i))+','+(k.j+dj));
+  cords=[];
+  for(const k of knots){
+    k.nb=[nb(k,-1,-1),nb(k,-1,1),nb(k,1,-1),nb(k,1,1)].filter(Boolean);
+    k.bottom=!nb(k,1,-1)&&!nb(k,1,1);
+    for(const s of [-1,1]){const b=nb(k,1,s);if(b)cords.push({a:k,b,seed:k.seed*3+s+7})}
+  }
+  cords.sort((p,q)=>(p.a.x*.6+p.a.y)-(q.a.x*.6+q.a.y));cords.forEach((c,n)=>c.n=n);
+}
+/* the net is split into four zones, one per support type; each cord from a person's knot points
+   toward one zone: up-left emotional, up-right practical, down-left advice, down-right feedback */
+const ZONE={emotional:[185,165],practical:[455,165],advice:[185,322],feedback:[455,322],none:[320,244]};
+const DIRS={emotional:[-1,-1],practical:[1,-1],advice:[-1,1],feedback:[1,1]};
+const dirType=(k,n)=>Object.keys(DIRS).find(t=>Math.sign(n.x-k.x)===DIRS[t][0]&&Math.sign(n.y-k.y)===DIRS[t][1]);
+function placePeople(sups){
+  const cand=knots.filter(k=>!k.edge),taken=[],count={};
+  const OFF=[[0,0],[56,28],[-56,28],[0,56],[-56,-28]];
+  return sups.map(sp=>{
+    const z=sp[0]||'none',c=count[z]=(count[z]||0)+1,[zx,zy]=ZONE[z],o=OFF[c-1]||[0,0],tx=zx+o[0],ty=zy+o[1];
+    const ok=cand.filter(k=>taken.every(t=>Math.hypot(t.x-k.x,t.y-k.y)>SP*1.05));
+    const best=ok.reduce((a,k)=>Math.hypot(k.x-tx,k.y-ty)<Math.hypot(a.x-tx,a.y-ty)?k:a);taken.push(best);return best;
+  });
+}
+const shuffle=a=>{for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a};
+
+function start(list){
+  build();ended=false;endAt=0;running=false;warned=false;
+  const sups=list.map(p=>SUP.map(x=>x.k).filter(k=>(supportSel.get(p.name.toLowerCase())||new Set()).has(k)));
+  const spots=placePeople(sups);
+  people=list.map((p,i)=>({name:p.name,why:p.why,support:SUP.map(x=>x.k).filter(k=>(supportSel.get(p.name.toLowerCase())||new Set()).has(k)),cell:spots[i],effort:3,state:'whole',paths:[],timeMs:0,workMs:0,reached:false}));
+  const used=SUP.filter(x=>people.some(p=>p.support.includes(x.k)));
+  $('legend').hidden=!used.length;$('zoneNote').hidden=!used.length;$('legend').innerHTML=used.map(x=>`<span><i style="background:${x.c}"></i>${x.k}</span>`).join('');
+  people.forEach(p=>{p.cell.p=p;cords.forEach(c=>{if(c.a===p.cell||c.b===p.cell)c.pk=p})});
+  twine=twine0=CORD_CM*12;steady=STEADY[0];budget=1;left=1; // everyone starts from 12 hours; the mood check-in adjusts it
+  // one relationship is complicated right now: every cord to them takes longer
+  if(people.length>1)people[Math.floor(Math.random()*people.length)].tangled=true;
+  queue=shuffle(people.slice());
+  $('intake').hidden=true;$('mend').hidden=false;$('end').hidden=true;
+  cam={...OVERVIEW};target={...OVERVIEW};
+  cur=null;$('who').hidden=true;$('why').hidden=true;$('choose').hidden=true;$('confirm').hidden=true;$('after').hidden=true;
+  say('');updateTop();
+  // the red thread knots the net, the names drop in, then their cords snap
+  intro={t:now(),snapped:false};
+  if(matchMedia('(prefers-reduced-motion:reduce)').matches)intro.t-=10000;
+  window.scrollTo(0,0);
+}
+const INTRO={draw:2000,tags:2500,snap:2900,end:3300};
+function introStep(){
+  if(!intro)return;
+  const t=now()-intro.t;
+  if(t>=INTRO.snap&&!intro.snapped){intro.snapped=true;people.forEach(p=>p.state='open')}
+  if(t>=INTRO.end){intro=null;
+    showOverview(`It's the end of the year, and your net has frayed in different places. Before the new year begins, take some time for mending. You have limited twine and a whole net of relationships to work on.`);
+    $('after').hidden=true;askMood()}
+}
+/* mood check-in: how you're feeling changes how much time and energy (twine) you have this year */
+const MOODS=[
+  {k:'rested',face:'M14 24 q6 6 12 0',eyes:'open',hrs:4,say:'You feel rested'},
+  {k:'okay',face:'M14 25 h12',eyes:'open',hrs:0,say:'You feel okay'},
+  {k:'exhausted',face:'M14 27 q6 -5 12 0',eyes:'closed',hrs:-5,say:'You feel exhausted'}];
+function faceSvg(m){const eyes=m.eyes==='open'?'<circle cx="15" cy="16" r="1.8" fill="#33313b"/><circle cx="25" cy="16" r="1.8" fill="#33313b"/>':'<path d="M12.5 16 q2.5 2 5 0 M22.5 16 q2.5 2 5 0" stroke="#33313b" stroke-width="1.4" fill="none" stroke-linecap="round"/>';
+  return `<svg viewBox="0 0 40 40" width="40" height="40" aria-hidden="true"><circle cx="20" cy="20" r="15" fill="#fdf0c8" stroke="#33313b" stroke-width="1.4" filter="url(#wobble)"/>${eyes}<path d="${m.face}" stroke="#33313b" stroke-width="1.5" fill="none" stroke-linecap="round"/></svg>`}
+function askMood(){
+  cur=null;target={...OVERVIEW};$('choose').hidden=true;$('confirm').hidden=true;$('mood').hidden=false;
+  say('Before you start: how are you feeling going into this?');
+  $('moods').innerHTML=MOODS.map((m,i)=>`<button class="choice mood" data-i="${i}">${faceSvg(m)}<b>${m.k}</b></button>`).join('');
+  $('moods').querySelectorAll('button').forEach(b=>b.addEventListener('click',()=>{
+    const m=MOODS[+b.dataset.i];twine=twine0=CORD_CM*(12+m.hrs);updateTop();$('mood').hidden=true;
+    const change=m.hrs>0?`, so you have ${m.hrs} extra hours`:m.hrs<0?`, so you have ${-m.hrs} fewer hours`:'';
+    showOverview(`It's the end of the year, and your net has frayed in different places. Before the new year begins, take some time for mending. You have limited twine and a whole net of relationships to work on.`+String.fromCharCode(10,10)+`${m.say}${change}: ${HRS(twine)} of twine this year.`);
+    $('after').hidden=false;$('next').textContent='Start mending'}));
+}
+function showOverview(msg){
+  cur=null;target={...OVERVIEW};
+  $('who').textContent='';$('who').hidden=true;$('why').hidden=true;$('choose').hidden=true;$('confirm').hidden=true;
+  $('zoneNote').hidden=ended||!people.some(p=>p.support.length); // not on the final review
+  say(msg);updateTop();
+}
+function updateTop(){
+  // spool: the wound thread shrinks as the year runs down
+  // a ball of twine that unwinds as the year runs down
+  const f=Math.max(0,twine/Math.max(1,twine0)),n=Math.max(0,Math.round(11*f));
+  const INK='#33313b',TWN='#e3c08a',y0=30+(11-n)*(30/11)/2;let w='';
+  for(let i=0;i<n;i++){const y=y0+i*(30/11);w+=`<path d="M24 ${y} L64 ${y+2.2}" stroke="${INK}" stroke-width="3.4" stroke-linecap="round"/><path d="M24 ${y} L64 ${y+2.2}" stroke="${TWN}" stroke-width="2" stroke-linecap="round"/>`}
+  // the loose end leaves from the end of the last wrap, wrapping round the card's edge first
+  const ly=n?y0+(n-1)*(30/11)+2.2:44,tail=`M64 ${ly} q4 1 5 4 q2 7 9 ${Math.max(8,60-ly)}`;
+  // running low: the card wilts and a little tag hangs off it ("tired", then "empty")
+  const low=twine<CORD_CM*3,empty=twine<CORD_CM*.5,tagTxt=empty?'empty':low?'tired':'';
+  const card=`<path d="M18 22 h52 l-6 10 v24 l6 10 h-52 l6 -10 v-24 z" fill="${empty?'#f9cddb':'#f6a9c0'}" stroke="${INK}" stroke-width="1.5" stroke-linejoin="round" filter="url(#wobble)"/>`;
+  const body=card+w+(n?`<path d="${tail}" fill="none" stroke="${INK}" stroke-width="3.4" stroke-linecap="round"/><path d="${tail}" fill="none" stroke="${TWN}" stroke-width="2" stroke-linecap="round"/><path d="M26 25 q4 -1.5 8 0" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round"/>`:'');
+  const tag=tagTxt?`<path d="M64 56 L74 70" stroke="${INK}" stroke-width="1"/><g transform="rotate(16 80 76)"><rect x="64" y="70" width="38" height="16" rx="3" fill="#fff" stroke="${INK}" stroke-width="1"/><circle cx="68" cy="78" r="1.6" fill="none" stroke="${INK}" stroke-width=".8"/><text x="85" y="82" text-anchor="middle" font-family="Gaegu, cursive" font-weight="700" font-size="11" fill="#e0482a">${tagTxt}</text></g>`:'';
+  $('bobbin').innerHTML=`<g class="bob${low&&!empty?' shake':''}" transform="${low?'rotate(-9 44 44) translate(0 4)':''}">${body}</g>${tag}`;
+  $('timeTxt').textContent=HRS(twine)+' left';
+  $('spool').classList.toggle('low',twine<CORD_CM*2);
+  const order=people.slice().sort((a,b)=>(b===cur)-(a===cur)||queue.indexOf(a)-queue.indexOf(b));
+  $('queue').innerHTML=order.map(p=>{
+    const st=p===cur?'now':p.state==='open'?(ended?'missed':''):'done '+p.state;
+    return `<span class="qitem ${st}"><i></i>${esc(p.name)}</span>`}).join('');
+}
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+function nextPerson(){
+  running=true;lastTick=now();
+  if(cur&&cur.state==='open'&&!cur.parked)queue.push(cur); // shouldn't happen, but never lose anyone
+  if(!queue.length){finishAll(`Everyone has had a turn, with ${twine} cm of twine left. This is your net.`);return}
+  cur=queue.shift();cur.parked=false;cur.reached=true;action=null;
+  if(cur.state!=='open'){nextPerson();return}
+  target={x:cur.cell.x,y:cur.cell.y+8,z:ZOOM};
+  $('who').hidden=false;$('why').hidden=true;$('who').textContent=cur.name;$('why').textContent=cur.why.join(' · ')+(cur.support.length?' · gives you '+cur.support.join(', '):'');
+  $('choose').hidden=false;$('after').hidden=true;$('confirm').hidden=true;$('zoneNote').hidden=true;
+  action={a:'weave',n:cur.cell.nb.length,t:null};cur.partial='weave';cur.partialN=action.n;
+  say(`Your relationship with ${cur.name} is fraying. How will you work on it?`+(cur.tangled?String.fromCharCode(10,10)+`It's complicated right now, so every cord to ${cur.name} takes longer.`:''));
+  renderChoices();updateTop();
+}
+function renderChoices(){
+  // re-tying means one new cord to each neighbouring knot
+  // you can still choose tape or let go until the first cord is tied
+  $('c-sticker').textContent='no twine';
+  document.querySelectorAll('.choice').forEach(b=>b.disabled=!!action&&action.a===b.dataset.a&&b.dataset.a==='sticker');
+  $('skip').hidden=false;
+  $('hint').hidden=!(action&&action.a==='weave'&&!cur.paths.length);
+}
+document.querySelectorAll('.choice').forEach(b=>b.addEventListener('click',()=>choose(b.dataset.a)));
+$('skip').addEventListener('click',()=>{cur.parked=true;queue.push(cur);say(`You put off deciding about ${cur.name} for now. You'll come back to them later.`);settle()});
+function choose(a){
+  if(a==='sticker'){action={a,n:cur.cell.nb.filter(n=>!cur.paths.some(pp=>pp.hit===n)).length,t:null};cur.tapes=[];renderChoices();say(`Tap each broken cord to tape it. 0 of ${action.n}.`);return}
+  if(a==='letgo'){$('choose').hidden=true;$('confirm').hidden=false;say(`Let go of ${cur.name}? The broken cords get cut, that part of the net stays open, and ${HRS(LETGO_CM)} of your time comes back to you. You can't undo this.`);return}
+  action={a,n:cur.cell.nb.length,t:null};cur.partial=a;cur.partialN=action.n;
+  renderChoices();
+  say(`Drag a cord from ${cur.name}'s knot to a circled knot. 0 of ${action.n}.`);
+}
+$('lgYes').addEventListener('click',()=>{cur.state='letgo';action=null;twine+=LETGO_CM;say(`You let go of ${cur.name}. ${HRS(LETGO_CM)} of your time comes back to you.`);settle()});
+$('lgNo').addEventListener('click',()=>{$('confirm').hidden=true;$('choose').hidden=false;say(`Your relationship with ${cur.name} is fraying. How will you work on it?`)});
+function settle(){
+  $('choose').hidden=true;$('confirm').hidden=true;$('after').hidden=false;
+  $('next').textContent=queue.length?`Next: ${queue[0].name}`:'See the whole net';updateTop();
+}
+$('next').addEventListener('click',()=>{if(cur&&!cur.parked&&cur.state==='open')queue.push(cur);cur=null;nextPerson()});
+
+function tick(){
+  return; // the year is measured in twine now, not time
+  if(!running)return;
+  const t=now();left-=t-lastTick;if(cur)cur.timeMs+=t-lastTick;lastTick=t;
+  if(left<=15000&&!warned){warned=true;if(!action)say(`15 seconds left this year.`)}
+  if(left<=0){left=0;timeUp();return}
+  updateTopLight();
+}
+let lastShown=-1;
+function updateTopLight(){const s=Math.ceil(left/1000);if(s!==lastShown){lastShown=s;updateTop()}}
+function timeUp(){
+  running=false;
+  if(action){drag=null;cur.workMs=0;action=null} // an unfinished weave stays a hole
+  const missed=people.filter(p=>p.state==='open').map(p=>p.name);
+  finishAll(missed.length?`The year ran out. Still open: ${missed.join(', ')}.`:'The year ran out. This is your net.');
+}
+function supportSummary(){
+  const used=SUP.map(x=>x.k).filter(k=>people.some(p=>p.support.includes(k)));if(!used.length)return '';
+  const holding=used.filter(k=>people.some(p=>p.support.includes(k)&&(p.state==='weave'||p.state==='rushed')));
+  const missing=used.filter(k=>!holding.includes(k));
+  return (holding.length?` Still holding: ${holding.join(', ')}.`:'')+(missing.length?` Missing: ${missing.join(', ')}.`:'');
+}
+function finishAll(msg){
+  running=false;ended=true;endAt=now();showOverview('This is your net now.'+String.fromCharCode(10,10)+'Where did your time go, and is that where you meant it to go?');target={x:320,y:268,z:.88};
+  $('after').hidden=true;$('end').hidden=false;updateTop();
+}
+
+/* ---------- drawing helpers ---------- */
+const rnd=s=>{const x=Math.sin(s*12.9898+78.233)*43758.5453;return x-Math.floor(x)};
+const TW={mid:'#e3c08a',light:'#efd7ad',knot:'#c99b62',dark:'#8a6238',ink:'#33313b',pole:'#d9b27c'};
+const sagged=p=>p&&p.state==='sticker'; // only tape makes a knot hang wrong; fraying and re-tied knots sit in place
+const pos=k=>{const tp=k.p&&k.p.state==='sticker';return{x:k.x+(tp?6:0),y:k.y+(sagged(k.p)?(tp?24:9):0)}};
+
+const supCol=()=>null; // cords stay plain twine; the corner zones carry the support types
+function cordPath(ax,ay,bx,by,s){const mx=(ax+bx)/2+(rnd(s)-.5)*2.5,my=(ay+by)/2+3+rnd(s+1)*2.5;cx.beginPath();cx.moveTo(ax,ay);cx.quadraticCurveTo(mx,my,bx,by)}
+/* support colours are twisted into the cord like a two- or three-ply rope */
+function twist(path,sup,w,alpha=1){
+  if(!sup||!sup.length)return;const seg=5;
+  cx.save();cx.globalAlpha=alpha;cx.lineWidth=w;
+  sup.forEach((k,i)=>{path();cx.setLineDash(sup.length>1?[seg,seg*(sup.length-1)]:[]);cx.lineDashOffset=-i*seg;cx.strokeStyle=SUPC[k];cx.stroke()});
+  cx.restore();cx.setLineDash([]);
+}
+function cord(ax,ay,bx,by,s,lw,col=TW.mid,edge=TW.ink,sup){
+  cordPath(ax,ay,bx,by,s);cx.strokeStyle=edge;cx.lineWidth=3.2*lw;cx.stroke();
+  cordPath(ax,ay,bx,by,s);cx.strokeStyle=col;cx.lineWidth=1.9*lw;cx.stroke();
+}
+/* half of a snapped cord, hanging from its knot with a frayed (or neatly cut) end */
+function stub(a,b,f,lw,clean,sup){
+  const ex=a.x+(b.x-a.x)*f,ey=a.y+(b.y-a.y)*f+5,mx=(a.x+ex)/2,my=(a.y+ey)/2+2;
+  const path=()=>{cx.beginPath();cx.moveTo(a.x,a.y);cx.quadraticCurveTo(mx,my,ex,ey)};
+  path();cx.strokeStyle=TW.ink;cx.lineWidth=3.2*lw;cx.stroke();
+  path();cx.strokeStyle=sup||TW.mid;cx.lineWidth=1.9*lw;cx.stroke();
+  const d=Math.atan2(ey-my,ex-mx);cx.beginPath();
+  if(clean){const px=Math.cos(d+Math.PI/2)*2.6,py=Math.sin(d+Math.PI/2)*2.6;
+    for(const o of [-2.2,-.6]){const qx=ex+Math.cos(d)*o,qy=ey+Math.sin(d)*o;cx.moveTo(qx-px,qy-py);cx.lineTo(qx+px,qy+py)}
+    cx.strokeStyle=TW.ink;cx.lineWidth=.8*lw}
+  else{[-.36,-.22,-.09,.04,.17,.3].forEach((t,k)=>{const ang=d+t,l=4.2+(k%3)*.9,bx=Math.cos(ang+1.57)*t*1.4,by=Math.sin(ang+1.57)*t*1.4;
+      cx.moveTo(ex,ey);cx.quadraticCurveTo(ex+Math.cos(ang)*l*.55+bx,ey+Math.sin(ang)*l*.55+by,ex+Math.cos(ang)*l,ey+Math.sin(ang)*l)});
+    cx.strokeStyle=TW.dark;cx.lineWidth=.6*lw}
+  cx.stroke();
+}
+function tangledStub(P,N,seed,lw){
+  const base=Math.atan2(N.y-P.y,N.x-P.x),ang=base+(rnd(seed+3)>.5?1:-1)*(.55+rnd(seed)*.75),L=Math.hypot(N.x-P.x,N.y-P.y)*(.46+rnd(seed+1)*.14);
+  const dx=Math.cos(ang),dy=Math.sin(ang),px=-dy,py=dx,side=rnd(seed+2)>.5?1:-1;
+  const ex=P.x+dx*L,ey=P.y+dy*L+3;
+  const path=()=>{cx.beginPath();cx.moveTo(P.x,P.y);
+    cx.bezierCurveTo(P.x+dx*L*1.05+px*L*.75*side,P.y+dy*L*1.05+py*L*.75*side,P.x+dx*L*.05+px*L*.8*side,P.y+dy*L*.05+py*L*.8*side,P.x+dx*L*.55,P.y+dy*L*.55); // a loop
+    cx.quadraticCurveTo(P.x+dx*L*.8-px*2*side,P.y+dy*L*.8-py*2*side,ex,ey)};
+  path();cx.strokeStyle=TW.ink;cx.lineWidth=3.2*lw;cx.stroke();
+  path();cx.strokeStyle=TW.mid;cx.lineWidth=1.9*lw;cx.stroke();
+  const d=Math.atan2(ey-(P.y+dy*L*.8),ex-(P.x+dx*L*.8));cx.beginPath();
+  [-.36,-.22,-.09,.04,.17,.3].forEach((t,k)=>{const a2=d+t,l=4.2+(k%3)*.9;cx.moveTo(ex,ey);cx.quadraticCurveTo(ex+Math.cos(a2)*l*.55+Math.cos(a2+1.57)*t*1.4,ey+Math.sin(a2)*l*.55+Math.sin(a2+1.57)*t*1.4,ex+Math.cos(a2)*l,ey+Math.sin(a2)*l)});
+  cx.strokeStyle=TW.dark;cx.lineWidth=.6*lw;cx.stroke();
+}
+function knot(x,y,r,lw,style){
+  cx.beginPath();cx.arc(x,y,r,0,7);cx.fillStyle=TW.knot;cx.fill();
+  cx.strokeStyle=TW.ink;cx.lineWidth=1*lw;if(style==='loose')cx.setLineDash([2,2]);cx.stroke();cx.setLineDash([]);
+  if(style==='tied'){ // two wraps of twine bound round the knot
+    cx.save();cx.beginPath();cx.arc(x,y,r*.94,0,7);cx.clip();cx.beginPath();
+    for(const o of [-.22,.22]){cx.moveTo(x-r,y+o*r-r*.05);cx.quadraticCurveTo(x,y+o*r-r*.3,x+r,y+o*r-r*.05)}
+    cx.strokeStyle=TW.dark;cx.lineWidth=1.3*lw;cx.lineCap='round';cx.stroke();cx.restore()}
+}
+function smoothPath(pts){cx.beginPath();cx.moveTo(pts[0].x,pts[0].y);
+  for(let i=1;i<pts.length-1;i++){const m={x:(pts[i].x+pts[i+1].x)/2,y:(pts[i].y+pts[i+1].y)/2};cx.quadraticCurveTo(pts[i].x,pts[i].y,m.x,m.y)}
+  const l=pts[pts.length-1];cx.lineTo(l.x,l.y)}
+/* a cord laid exactly along the path the person dragged */
+const NEWCORD={weave:['#f0d29c','#ebc98c','#f3dbb0'],rushed:['#ead9b8']};
+function layCord(pts,a,k,lw,alpha=1,sup){
+  if(pts.length<2)return;
+  const w=a==='rushed'?1.1:2.4,col=NEWCORD[a][k%NEWCORD[a].length];
+  cx.save();cx.globalAlpha=alpha;cx.lineCap='round';cx.lineJoin='round';
+  smoothPath(pts);cx.strokeStyle=a==='rushed'?TW.dark:TW.ink;cx.lineWidth=(w+(a==='rushed'?.8:1.4))*lw;cx.stroke();
+  smoothPath(pts);cx.strokeStyle=col;cx.lineWidth=w*lw;cx.stroke();
+  cx.restore();
+}
+function heartPath(x,y,r){cx.moveTo(x,y+r*.9);cx.bezierCurveTo(x-r*1.8,y-r*.2,x-r*.9,y-r*1.5,x,y-r*.6);cx.bezierCurveTo(x+r*.9,y-r*1.5,x+r*1.8,y-r*.2,x,y+r*.9)}
+/* a strip of flat washi tape, as it looks in your hand before it goes on */
+function flatTape(x,y,ang,lw){
+  const L=34,w=10;cx.save();cx.translate(x,y);cx.rotate(ang);cx.globalAlpha=.92;
+  const body=()=>{cx.beginPath();cx.moveTo(-L/2,-w/2);cx.lineTo(L/2,-w/2);
+    for(let k=0;k<5;k++)cx.lineTo(L/2+(k%2?-1.6:0),-w/2+(k+1)*w/5); // torn ends
+    cx.lineTo(-L/2,w/2);for(let k=0;k<5;k++)cx.lineTo(-L/2+(k%2?1.6:0),w/2-(k+1)*w/5);cx.closePath()};
+  body();cx.fillStyle='#2a6fd6';cx.fill();
+  cx.save();body();cx.clip();cx.beginPath();for(let px=-L/2+4,r=0;px<L/2;px+=7,r++)heartPath(px,r%2?2:-1.6,2);cx.fillStyle='#ffc2d6';cx.fill();cx.restore();
+  body();cx.strokeStyle=TW.ink;cx.lineWidth=.8*lw;cx.stroke();cx.restore();
+}
+/* once it's on, the tape is wound tight round the gap: as thin as the cord, with lumps where it wraps each frayed end */
+function tapeWrap(a,b,u,lw){
+  const at=t=>({x:a.x+(b.x-a.x)*t,y:a.y+(b.y-a.y)*t+Math.sin(Math.PI*t)*10}); // tape hangs slack between the knots
+  const A=at(.19),B=at(.81),M=at(.5);
+  const band=()=>{cx.beginPath();cx.moveTo(A.x,A.y);cx.quadraticCurveTo(2*M.x-(A.x+B.x)/2,2*M.y-(A.y+B.y)/2,B.x,B.y)};
+  cx.save();cx.lineCap='round';
+  band();cx.strokeStyle=TW.ink;cx.lineWidth=5*lw;cx.stroke();
+  band();cx.strokeStyle='#2a6fd6';cx.lineWidth=3.8*lw;cx.stroke();
+  // tiny hearts along the wrap
+  for(let t=.3;t<.72;t+=.13){const p=at(t);cx.beginPath();heartPath(p.x,p.y-.3,1.9*lw+.5);cx.fillStyle='#ff9ec0';cx.fill();cx.strokeStyle=TW.ink;cx.lineWidth=.5*lw;cx.stroke()}
+  // spiral turns of the tape
+  const ang=Math.atan2(B.y-A.y,B.x-A.x),nx=-Math.sin(ang),ny=Math.cos(ang),dx=Math.cos(ang),dy=Math.sin(ang);
+  cx.beginPath();for(let t=.23;t<.79;t+=.055){const p=at(t);cx.moveTo(p.x-nx*2.2-dx*.9,p.y-ny*2.2-dy*.9);cx.lineTo(p.x+nx*2.2+dx*.9,p.y+ny*2.2+dy*.9)}
+  cx.strokeStyle='rgba(255,255,255,.45)';cx.lineWidth=.45*lw;cx.stroke();
+  // a slightly thicker wrap bundling each frayed end
+  for(const t of [.27,.73]){const p=at(t);cx.save();cx.translate(p.x,p.y);cx.rotate(ang);
+    cx.beginPath();cx.ellipse(0,0,4.2,3.2,0,0,7);cx.fillStyle='#2a6fd6';cx.fill();cx.strokeStyle=TW.ink;cx.lineWidth=.8*lw;cx.stroke();
+    cx.beginPath();cx.moveTo(-1.6,-3);cx.lineTo(.3,3);cx.moveTo(1,-3.1);cx.lineTo(2.6,2.7);cx.strokeStyle='rgba(255,255,255,.5)';cx.lineWidth=.45*lw;cx.stroke();cx.restore()}
+  cx.restore();
+}
+/* a little mushroom growing out of the wooden pole, in the same flat, ink-outlined style */
+function mushroom(x,y,sz,cap,lw,tilt){
+  cx.save();cx.translate(x,y);cx.rotate(tilt);cx.lineJoin='round';cx.lineCap='round';
+  cx.beginPath();cx.moveTo(-2.3*sz,0);cx.quadraticCurveTo(-2.6*sz,-3.5*sz,-1.7*sz,-6.4*sz);cx.lineTo(1.7*sz,-6.4*sz);cx.quadraticCurveTo(2.6*sz,-3.5*sz,2.3*sz,0);cx.closePath();
+  cx.fillStyle='#fffaf1';cx.fill();cx.strokeStyle=TW.ink;cx.lineWidth=1*lw;cx.stroke();
+  cx.beginPath();cx.moveTo(-6.6*sz,-6*sz);cx.bezierCurveTo(-6.2*sz,-13.2*sz,6.2*sz,-13.2*sz,6.6*sz,-6*sz);cx.quadraticCurveTo(0,-7.6*sz,-6.6*sz,-6*sz);cx.closePath();
+  cx.fillStyle=cap;cx.fill();cx.stroke();
+  cx.fillStyle='#fff';[[-3,-9.4,1.1],[1.2,-10.6,.9],[3.6,-8.2,.75]].forEach(([dx,dy,r])=>{cx.beginPath();cx.ellipse(dx*sz,dy*sz,r*sz,r*.8*sz,0,0,7);cx.fill()});
+  cx.beginPath();cx.moveTo(-3.6*sz,-8.6*sz);cx.quadraticCurveTo(-3.4*sz,-10.6*sz,-1.6*sz,-11.2*sz);cx.strokeStyle='rgba(255,255,255,.7)';cx.lineWidth=.9*lw;cx.stroke();
+  cx.restore();
+}
+function pole(lw){
+  const X=NET.x0-28,R=NET.x1+28,Y=NET.y0-36;
+  cx.beginPath();cx.roundRect?cx.roundRect(X,Y,R-X,12,6):cx.rect(X,Y,R-X,12);cx.fillStyle=TW.pole;cx.fill();cx.strokeStyle=TW.ink;cx.lineWidth=1.2*lw;cx.stroke();
+  cx.beginPath();for(let x=X+18;x<R-10;x+=46){cx.moveTo(x,Y+4);cx.quadraticCurveTo(x+10,Y+6,x+22,Y+4.5)}cx.strokeStyle=TW.dark;cx.lineWidth=.8*lw;cx.stroke();
+  // three mushrooms growing on the top right of the pole
+  mushroom(R-74,Y+1.5,1.6,'#f28a6a',lw,-.14);mushroom(R-50,Y+1.5,2.2,'#f6a9c0',lw,.04);mushroom(R-28,Y+1.5,1.3,'#f2b84b',lw,.2);
+}
+
+function draw(){
+  introStep();
+  const ease=matchMedia('(prefers-reduced-motion:reduce)').matches?1:.1;
+  if(cur)target.z=window.__handOn?3.4:ZOOM;
+  for(const k of ['x','y','z'])cam[k]+=(target[k]-cam[k])*ease;
+  const lw=1/Math.sqrt(cam.z),ink=TW.ink,fd=endAt?1-.7*Math.min(1,(now()-endAt)/1500):1;
+  const touched=new Set();if(endAt)people.forEach(p=>{touched.add(p.cell);p.cell.nb.forEach(n=>touched.add(n))});
+  cx.setTransform(1,0,0,1,0,0);cx.fillStyle=css('--cream');cx.fillRect(0,0,cv.width,cv.height);
+  cx.setTransform(S*cam.z,0,0,S*cam.z,S*(W/2-cam.z*cam.x),S*(H/2-cam.z*cam.y));
+  cx.lineCap='round';cx.lineJoin='round';
+  const t=intro?now()-intro.t:1e9,shown=intro?Math.floor(Math.min(1,t/INTRO.draw)*cords.length):cords.length;
+  cx.globalAlpha=fd;pole(lw);cx.globalAlpha=1;
+  if(people.some(p=>p.support.length)){const mx=(NET.x0+NET.x1)/2,my=(NET.y0+NET.y1)/2,Q={emotional:[NET.x0-14,NET.y0-8,mx,my],practical:[mx,NET.y0-8,NET.x1+14,my],advice:[NET.x0-14,my,mx,NET.y1+18],feedback:[mx,my,NET.x1+14,NET.y1+18]};
+    cx.save();cx.globalAlpha=.16;for(const t in Q){const [x1,y1,x2,y2]=Q[t];cx.fillStyle=SUPC[t];cx.fillRect(x1,y1,x2-x1,y2-y1)}cx.restore();
+  }
+  // hanging lines from the top row to the pole
+  cx.globalAlpha=fd;for(const k of knots)if(k.j===0&&(!intro||cords.some(c=>c.a===k&&c.n<shown))){cx.beginPath();cx.moveTo(k.x,k.y);cx.lineTo(k.x,NET.y0-24);cx.strokeStyle=ink;cx.lineWidth=3.2*lw;cx.stroke();cx.strokeStyle=TW.mid;cx.lineWidth=1.9*lw;cx.stroke()}cx.globalAlpha=1;
+  // holes where someone was let go: an open, empty gap edged with a faint dashed line
+  for(const p of people)if(p.state==='letgo'&&p.cell.nb.length>2){const k=p.cell,ring=k.nb.slice().sort((a,b)=>Math.atan2(a.y-k.y,a.x-k.x)-Math.atan2(b.y-k.y,b.x-k.x));
+    cx.beginPath();ring.forEach((n,i)=>i?cx.lineTo(n.x,n.y):cx.moveTo(n.x,n.y));cx.closePath();cx.fillStyle=css('--cream');cx.fill();
+    cx.setLineDash([3,4]);cx.strokeStyle='rgba(51,49,59,.35)';cx.lineWidth=1*lw;cx.stroke();cx.setLineDash([])}
+  // the mesh
+  for(const c of cords){
+    if(c.n>=shown)continue;
+    const p=c.pk;
+    if(p&&p.state==='letgo'){const N=c.a===p.cell?c.b:c.a;stub(N,p.cell,.3,lw,false,null);continue}
+    if(p&&p.state!=='whole'){const P=pos(p.cell),N=c.a===p.cell?c.b:c.a,f=.27,cl=false;
+      if(p.paths.some(pp=>pp.hit===N))continue;const sc=supCol(p,p.cell,N);if(p.tangled)tangledStub(P,N,c.seed,lw);else stub(P,N,f,lw,cl,sc);stub(N,P,f,lw,cl,sc);continue}
+    const red=intro&&c.n>shown-10;
+    const pc=c.pk?supCol(c.pk,c.pk.cell,c.a===c.pk.cell?c.b:c.a):null;
+    cx.globalAlpha=c.pk?1:fd;cord(c.a.x,c.a.y,c.b.x,c.b.y,c.seed,lw,red?css('--red'):pc||TW.mid);cx.globalAlpha=1;
+  }
+  // tails hanging off the bottom row
+  cx.globalAlpha=fd;if(!intro||t>INTRO.draw)for(const k of knots)if(k.bottom){for(const s of [-1,1]){cx.beginPath();cx.moveTo(k.x,k.y);cx.quadraticCurveTo(k.x+s*4,k.y+8,k.x+s*5,k.y+14);cx.strokeStyle=ink;cx.lineWidth=3.2*lw;cx.stroke();cx.strokeStyle=TW.mid;cx.lineWidth=1.9*lw;cx.stroke()}}cx.globalAlpha=1;
+  // cords people have laid back in
+  for(const p of people){
+    const a=p.state==='open'?(p===cur&&action?action.a:p.partial||null):p.state;
+    if(p.state!=='letgo'&&p.paths.length)p.paths.forEach((pts,k)=>layCord(pts,a==='rushed'?'rushed':'weave',k,lw,1,p.support));
+    if(p===cur&&drag&&action&&action.a!=='sticker'){const q=drag.path[drag.path.length-1],P0=pos(p.cell),src=Math.hypot(drag.path[0].x-P0.x,drag.path[0].y-P0.y)<REACH?q:drag.path[0];
+      const hn=p.cell.nb.reduce((a,n)=>{const d=Math.hypot(src.x-n.x,src.y-n.y);return d<a.d?{n,d}:a},{n:null,d:1e9}).n;drag.path.type=hn?dirType(p.cell,hn):null;
+      layCord(drag.path,action.a,p.paths.length,lw,.8,p.support)}
+  }
+  // knots
+  for(const k of knots){
+    if(intro&&!cords.some(c=>(c.a===k||c.b===k)&&c.n<shown))continue;
+    const p=k.p;
+    if(!p){cx.globalAlpha=touched.has(k)?1:fd;knot(k.x,k.y,3.2,lw);cx.globalAlpha=1;continue}
+    if(p.state==='letgo')continue;
+    const P=pos(k);
+    knot(P.x,P.y,p.state==='weave'?5.6:p.state==='rushed'?4.6:4.4,lw,p.state==='weave'?'tied':p.state==='rushed'?'loose':null);
+  }
+  for(const p of people)if((p.state==='sticker'||p.state==='open')&&p.tapes)p.tapes.forEach(tp=>tapeWrap(pos(p.cell),pos(p.cell.nb[tp.i]),tp.u,lw));
+  if(cur&&action&&action.a==='sticker'&&hoverPt){const P=pos(cur.cell);let ang=-.4,bd=1e9;
+    cur.cell.nb.forEach((n,i)=>{if(cur.tapes.some(x=>x.i===i)||cur.paths.some(pp=>pp.hit===n))return;const N=pos(n),mx=(P.x+N.x)/2,my=(P.y+N.y)/2,d=Math.hypot(hoverPt.x-mx,hoverPt.y-my);if(d<bd){bd=d;ang=Math.atan2(N.y-P.y,N.x-P.x)}});
+    flatTape(hoverPt.x,hoverPt.y,bd<30?ang:-.4,lw)}
+  // where to tie: the person's knot and its neighbours, circled
+  if(cur&&action){cx.setLineDash([4,3]);cx.strokeStyle=css('--green');cx.lineWidth=1.6*lw;
+    for(const n of [cur.cell,...cur.cell.nb.filter(n=>action.a!=='weave'||!cur.paths.some(pp=>pp.hit===n))]){const P=pos(n),col=n===cur.cell?null:supCol(cur,cur.cell,n);cx.strokeStyle=col||css('--green');cx.lineWidth=(col?2.4:1.6)*lw;cx.beginPath();cx.arc(P.x,P.y,REACH*.5,0,7);cx.stroke()}cx.setLineDash([])}
+  // the needle leading the thread during the intro
+  if(intro&&shown<cords.length&&shown>0){const c=cords[shown-1];cx.beginPath();cx.moveTo(c.b.x-6,c.b.y-6);cx.lineTo(c.b.x+4,c.b.y+4);cx.strokeStyle='#77727f';cx.lineWidth=2;cx.stroke()}
+  // zone labels sit on top of the cords so they stay readable
+  if(people.some(p=>p.support.length)){const mx=(NET.x0+NET.x1)/2,my=(NET.y0+NET.y1)/2,L={emotional:[NET.x0-8,NET.y0+12,'left'],practical:[NET.x1+8,NET.y0+12,'right'],advice:[NET.x0-8,NET.y1+12,'left'],feedback:[NET.x1+8,NET.y1+12,'right']};
+    cx.font='bold 20px "Gaegu", cursive';for(const t in L){const [lx,ly,al]=L[t];cx.textAlign=al;cx.lineJoin='round';cx.lineWidth=6;cx.strokeStyle=css('--cream');cx.strokeText(t,lx,ly);cx.fillStyle=t==='practical'?'#c98b12':SUPC[t];cx.fillText(t,lx,ly)}}
+  // name tags hang under each person's knot in the overview
+  if(!cur&&(!intro||t>INTRO.draw)){
+    const drop=intro?Math.min(1,(t-INTRO.draw)/(INTRO.tags-INTRO.draw)):1,dy=(1-drop)*-24;
+    cx.globalAlpha=drop;cx.font='24px "Gaegu", cursive';cx.textAlign='center';
+    for(const p of people){const P=pos(p.cell),tw=cx.measureText(p.name).width+16,ly=P.y+14+dy;
+      cx.beginPath();cx.moveTo(P.x,P.y+4);cx.lineTo(P.x,ly);cx.strokeStyle=ink;cx.lineWidth=.9;cx.stroke();
+      cx.beginPath();cx.roundRect?cx.roundRect(P.x-tw/2,ly,tw,24,9):cx.rect(P.x-tw/2,ly,tw,24);
+      // solid tag, white name: red while fraying, then the colour of what you did
+      cx.fillStyle={open:css('--red'),weave:'#2a6fd6',sticker:'#e0779d',letgo:'#9a96a3',whole:css('--red')}[p.state]||css('--red');cx.fill();cx.strokeStyle=ink;cx.lineWidth=1;cx.stroke();
+      cx.fillStyle='#fff';cx.fillText(p.name,P.x,ly+18)}
+    cx.globalAlpha=1;
+  }
+  strandSummary(lw);
+}
+
+const PCOL=['#f28fb0','#f2b84b','#5b9be6','#5fb87a','#b59ae6'];
+function strandSummary(lw){
+  if(!endAt)return;
+  const k=Math.min(1,Math.max(0,(now()-endAt-500)/1800)),X0=NET.x0,X1=NET.x1,Y=NET.y1+52;
+  const used=people.map((p,i)=>({p,cm:p.cm||0,col:PCOL[i%PCOL.length]})).filter(u=>u.cm>0&&u.p.state!=='letgo');
+  const total=used.reduce((a,u)=>a+u.cm,0)+Math.max(0,twine);if(total<=0)return;
+  const end=X0+(X1-X0)*k,wy=x=>Y+Math.sin(x*.09)*1.8;
+  const run=(x1,x2)=>{cx.beginPath();for(let x=x1;x<=x2+.01;x+=2){const y=wy(Math.min(x,x2));x===x1?cx.moveTo(x,y):cx.lineTo(Math.min(x,x2),y)}};
+  cx.save();cx.lineCap='round';cx.lineJoin='round';
+  cx.font='bold 17px "Gaegu", cursive';cx.textAlign='left';cx.fillStyle=TW.ink;cx.globalAlpha=Math.min(1,k*3);cx.fillText('where your time went',X0,Y-14);cx.globalAlpha=1;
+  run(X0,end);cx.strokeStyle=TW.ink;cx.lineWidth=7*lw;cx.stroke();
+  let x=X0;
+  for(const u of used){const w=(X1-X0)*u.cm/total,x2=Math.min(x+w,end);if(x2>x){run(x,x2);cx.strokeStyle=u.col;cx.lineWidth=5*lw;cx.stroke()}
+    if(k>=1&&w>26){cx.font='16px "Gaegu", cursive';cx.textAlign='center';cx.fillStyle=TW.ink;cx.fillText(u.p.name,x+w/2,Y+20);cx.fillStyle=css('--ink-soft');cx.font='13px "Gaegu", cursive';cx.fillText(HRS(u.cm),x+w/2,Y+33)}
+    x+=w}
+  if(end>x){run(x,end);cx.strokeStyle=TW.mid;cx.lineWidth=5*lw;cx.stroke()}
+  if(k>=1){
+    if(X1-x>26){cx.font='16px "Gaegu", cursive';cx.textAlign='center';cx.fillStyle=css('--ink-soft');cx.fillText('unused',(x+X1)/2,Y+20)}
+    cx.beginPath();for(const t of [-.5,-.2,.1,.4]){cx.moveTo(X1,wy(X1));cx.lineTo(X1+6*Math.cos(t),wy(X1)+6*Math.sin(t))}cx.strokeStyle=TW.dark;cx.lineWidth=.8*lw;cx.stroke();
+    const none=people.filter(p=>!(p.cm>0)||p.state==='letgo').map(p=>p.name);
+    if(none.length){cx.font='16px "Gaegu", cursive';cx.textAlign='right';cx.fillStyle=css('--ink-soft');cx.fillText('no time for: '+none.join(', '),X1,Y-14)}
+  }
+  cx.restore();
+}
+
+/* ---------- tying input ---------- */
+function pt(e){const r=cv.getBoundingClientRect(),px=(e.clientX-r.left)*W/r.width,py=(e.clientY-r.top)*H/r.height,t=now(),a=action&&action.a==='weave'?steady.amp:0; // the wobble only affects tying cords, not placing tape
+  return{x:cam.x+(px-W/2)/cam.z+a*(Math.sin(t*.011)+.6*Math.sin(t*.027+1.3)),y:cam.y+(py-H/2)/cam.z+a*(Math.cos(t*.013)+.6*Math.sin(t*.031+.4))}}
+cv.addEventListener('pointerdown',e=>{
+  if(!cur||!action)return;
+  try{cv.setPointerCapture(e.pointerId)}catch(_){}const q=pt(e);drag={path:[q],t:now(),cam:e.pointerId===77};
+});
+cv.addEventListener('pointerleave',()=>hoverPt=null);
+cv.addEventListener('pointermove',e=>{hoverPt=pt(e);if(!drag)return;const q=pt(e),l=drag.path[drag.path.length-1];if(Math.hypot(q.x-l.x,q.y-l.y)>1.2)drag.path.push(q)});
+cv.addEventListener('pointerup',e=>{
+  if(!drag)return;const {path,t,cam:byHand}=drag;path.push(pt(e));drag=null;
+  if(action.a==='sticker'){
+    const q=path[path.length-1],P=pos(cur.cell);let best=null,bd=byHand?30:15;
+    cur.cell.nb.forEach((n,i)=>{if(cur.tapes.some(x=>x.i===i)||cur.paths.some(pp=>pp.hit===n))return;const N=pos(n),dx=N.x-P.x,dy=N.y-P.y,u=Math.max(0,Math.min(1,((q.x-P.x)*dx+(q.y-P.y)*dy)/(dx*dx+dy*dy))),d=Math.hypot(P.x+dx*u-q.x,P.y+dy*u-q.y);if(d<bd){bd=d;best={i,u:Math.max(.42,Math.min(.58,u))}}});
+    if(!best){say('Tap right on one of the broken cords.');return}
+    action.t??=t;cur.tapes.push(best);
+    if(cur.tapes.length>=action.n){cur.workMs=now()-action.t;cur.state='sticker';say(`${cur.name} was hastily taped back in.`);action=null;settle()}
+    else say(`${cur.tapes.length} of ${action.n} cords taped.`);
+    return;
+  }
+  // a cord counts if it runs from this person's knot to one of its neighbours (either direction)
+  const P=pos(cur.cell),R=byHand?REACH*3.2:REACH*steady.reach*.7;let s=path[0],en=path[path.length-1]; // mouse: tight; hands on camera: generous
+  const atP=q=>Math.hypot(q.x-P.x,q.y-P.y)<R,atN=q=>cur.cell.nb.some(n=>{const N=pos(n);return Math.hypot(q.x-N.x,q.y-N.y)<R});
+  // by hand, a pinch can start anywhere: if it ends on a circled knot, the cord is tied from the person's knot
+  if(byHand){const open=cur.cell.nb.filter(n=>!cur.paths.some(pp=>pp.hit===n));let best=null,bd=REACH*4.2;
+    [[s,0],[en,1]].forEach(([q,end])=>open.forEach(n=>{const N=pos(n),d=Math.hypot(q.x-N.x,q.y-N.y);if(d<bd){bd=d;best={n,end}}}));
+    if(best){if(best.end===0)path.reverse();const N=pos(best.n);path.unshift({x:P.x,y:P.y});path.push({x:N.x,y:N.y});s=path[0];en=path[path.length-1]}}
+  if(!((atP(s)&&atN(en))||(atN(s)&&atP(en)))){say(`Drag a cord from ${cur.name}'s knot to one of the circled knots.`);return}
+  const far=atP(s)?en:s,hit=cur.cell.nb.reduce((a,n)=>{const N=pos(n),d=Math.hypot(far.x-N.x,far.y-N.y);return d<a.d?{n,d}:a},{n:null,d:1e9}).n;
+  if(hit&&cur.paths.some(pp=>pp.hit===hit)){say('That cord is already tied. Try another circled knot.');return}
+  path.hit=hit;path.type=hit?dirType(cur.cell,hit):null;
+  if(hit){const N=pos(hit),pEnd=atP(path[0])?0:path.length-1,nEnd=pEnd?0:path.length-1;path[pEnd]={x:P.x,y:P.y};path[nEnd]={x:N.x,y:N.y}}
+  let cm=0;for(let i=1;i<path.length;i++)cm+=Math.hypot(path[i].x-path[i-1].x,path[i].y-path[i-1].y);cm=Math.round(cm);
+  if(byHand){const d=Math.hypot(path[path.length-1].x-path[0].x,path[path.length-1].y-path[0].y);cm=Math.min(cm,Math.round(d*1.5))} // hands aren't charged for tracking detours
+  if(cur.tangled)cm=Math.round(cm*1.5); // a complicated relationship takes more out of you
+  if(cm>twine){say(`That cord would take ${HRS(cm)}, and you only have ${HRS(twine)} left. You can still tape the rest, or let go.`);return}
+  twine-=cm;cur.cm=(cur.cm||0)+cm;
+  action.t??=t;cur.paths.push(path);
+  updateTop();
+  if(cur.paths.length>=action.n){cur.workMs=now()-action.t;cur.state=action.a;
+    const verb={weave:'is tied back in',rushed:'is loosely knotted'}[action.a];
+    let msg=`${cur.name} was lovingly worked back in to the network.`;
+    const others=people.filter(p=>p!==cur&&p.state!=='letgo');
+    if(others.length&&Math.random()<.45){const g=others[Math.floor(Math.random()*others.length)];twine+=CORD_CM;msg+=String.fromCharCode(10,10)+`Then ${g.name} checked in on you. 1 hour comes back.`}
+    say(msg);action=null;settle()}
+  else{say(`${cur.paths.length} of ${action.n} cords. That one took ${HRS(cm)}.`);renderChoices()}
+});
+cv.addEventListener('pointercancel',()=>drag=null);
+
+$('reset').addEventListener('click',()=>{running=false;$('mend').hidden=true;$('intake').hidden=false;cur=null;window.scrollTo(0,0)});
+
+/* ---------- loop ---------- */
+window.__mode=()=>cur&&action?action.a:null; // lets the hand-tracking script know what you're doing
+(function loop(){if(!$('mend').hidden){tick();draw()}requestAnimationFrame(loop)})();
+})();
+</script>
+<script type="module">
+/* Camera tying with two hands. Re-tie: pinch the person's knot with one hand and a circled knot with the other,
+   then bring your hands together until they touch; the cord follows both hands' paths.
+   Tape: pinch and release on a broken cord with either hand. Video never leaves the browser. */
+const $=id=>document.getElementById(id);
+const cv=$('cv'),hand=$('hand'),hx=hand.getContext('2d'),vid=$('vid'),note=$('camNote'),btn=$('camBtn');
+let landmarker=null,stream=null,running=false,lastT=-1,H=[],tieLock=false;
+/* practice: learn the pinch and the two-handed tie on two practice knots before touching the net */
+const STEPS=[
+  {say:'Practice: hold up both hands so the camera can see them.',done:()=>H.length>=2},
+  {say:'Pinch your thumb and pointer finger together on both hands. Each dot turns red.',done:()=>H.length>=2&&H[0].pinched&&H[1].pinched},
+  {say:'Let go: open both hands.',done:()=>H.length>=2&&!H[0].pinched&&!H[1].pinched},
+  {say:'Now pinch again, with each hand on a practice knot.',done:()=>H.length>=2&&H.every(h=>h.pinched&&KNOTS.some(k=>Math.hypot(h.pos.x-k.x,h.pos.y-k.y)<.09))},
+  {say:'Keep pinching and bring your hands together until they touch.',done:()=>H.length>=2&&H[0].pinched&&H[1].pinched&&Math.hypot(H[0].pos.x-H[1].pos.x,H[0].pos.y-H[1].pos.y)<TOUCH},
+  {say:'That’s a knot. Open your hands, and you’re ready.',done:()=>H.every(h=>!h.pinched)},
+];
+const KNOTS=[{x:.2,y:.5},{x:.8,y:.5}];
+let practice=null; // {step, tied, doneAt}
+function startPractice(){practice={step:0,tied:false};$('practiceBtn').hidden=true;$('skipPractice').hidden=false}
+function endPractice(){practice=null;$('skipPractice').hidden=true;$('practiceBtn').hidden=!running}
+$('practiceBtn').addEventListener('click',startPractice);
+$('skipPractice').addEventListener('click',endPractice);
+function practiceTick(){
+  const st=STEPS[practice.step];note.textContent='';
+  if(practice.step===4&&st.done())practice.tied=true;
+  if(st.done()){practice.step++;if(practice.step>=STEPS.length){note.textContent='Nice. Choose Re-tie or Tape below to start.';endPractice()}}
+}
+const PIN_ON=.38,PIN_OFF=.6,TOUCH=.07; // pinch thresholds (relative to hand size); how close counts as touching
+const HELP={weave:'',
+  sticker:'Pinch and release on a broken cord to tape it.',none:''};
+btn.addEventListener('click',async()=>{
+  if(running){stop();return}
+  btn.disabled=true;note.textContent='Starting the camera…';
+  try{
+    stream=await navigator.mediaDevices.getUserMedia({video:{width:640,height:480,facingMode:'user'},audio:false});
+    vid.srcObject=stream;await vid.play();
+    if(!landmarker){
+      note.textContent='Loading hand tracking…';
+      const v=await import('https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.14/vision_bundle.mjs');
+      const fs=await v.FilesetResolver.forVisionTasks('https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.14/wasm');
+      landmarker=await v.HandLandmarker.createFromOptions(fs,{baseOptions:{modelAssetPath:'https://storage.googleapis.com/mediapipe-models/hand_landmarker/hand_landmarker/float16/1/hand_landmarker.task',delegate:'GPU'},runningMode:'VIDEO',numHands:2});
+    }
+    running=true;window.__handOn=true;btn.innerHTML='<span>Stop the camera</span>';startPractice();
+    requestAnimationFrame(tick);
+  }catch(err){
+    note.textContent=err&&err.name==='NotAllowedError'?'The camera was blocked. Allow it in the browser’s address bar, then try again.':'The camera or hand tracking could not start here. Open this file in Chrome on a laptop with a webcam.';
+    stop(false);
+  }finally{btn.disabled=false}
+});
+function stop(resetNote=true){running=false;window.__handOn=false;practice=null;$('practiceBtn').hidden=true;$('skipPractice').hidden=true;if(stream)stream.getTracks().forEach(t=>t.stop());stream=null;
+  H.forEach((h,i)=>{if(h.pinched&&h.down)fire('pointerup',h.pos,77+i)});H=[];hx.clearRect(0,0,hand.width,hand.height);btn.innerHTML='<span>Tie with your hands on camera</span><small>(uses your webcam)</small>';if(resetNote)note.textContent=''}
+function fire(type,p,id=77){const r=cv.getBoundingClientRect();
+  cv.dispatchEvent(new PointerEvent(type,{clientX:r.left+p.x*r.width,clientY:r.top+p.y*r.height,pointerId:id,pointerType:'pen',bubbles:true,isPrimary:id===77}))}
+const map=(v,a,b)=>Math.min(1,Math.max(0,(v-a)/(b-a)));
+const mode=()=>{const m=window.__mode&&window.__mode();return m==='weave'||m==='sticker'?m:'none'};
+/* keep each hand's identity from frame to frame by matching to the nearest hand seen last frame */
+function track(found){
+  const next=[];
+  for(const m of found){
+    let best=null,bd=1e9;for(const h of H){if(next.includes(h))continue;const d=Math.hypot(h.pos.x-m.x,h.pos.y-m.y);if(d<bd){bd=d;best=h}}
+    const h=best&&bd<.35?best:{pos:{x:m.x,y:m.y},pinched:false,trail:[]};
+    h.pos={x:h.pos.x+(m.x-h.pos.x)*.4,y:h.pos.y+(m.y-h.pos.y)*.4};h.d=m.d;next.push(h);
+  }
+  H.forEach((h,i)=>{if(!next.includes(h)&&h.down)fire('pointerup',h.pos,77+i)}); // a hand left the frame
+  H=next;
+}
+function tick(){
+  if(!running)return;
+  if(vid.readyState>=2&&vid.currentTime!==lastT){
+    lastT=vid.currentTime;
+    const res=landmarker.detectForVideo(vid,performance.now());
+    const found=(res.landmarks||[]).map(L=>{const tip=L[8],th=L[4],size=Math.hypot(L[0].x-L[9].x,L[0].y-L[9].y)||.1;
+      return {x:map(1-(tip.x+th.x)/2,.02,.98),y:map((tip.y+th.y)/2,.04,.94),d:Math.hypot(tip.x-th.x,tip.y-th.y)/size}});
+    track(found);
+    const m=practice?'practice':mode();if(!practice)note.textContent=HELP[m];
+    H.forEach((h,i)=>{
+      const was=h.pinched;
+      if(!h.pinched&&h.d<PIN_ON){h.pinched=true;h.trail=[{...h.pos}]}
+      else if(h.pinched&&h.d>PIN_OFF){h.pinched=false}
+      if(h.pinched)h.trail.push({...h.pos});
+      if(practice)return;
+      if(m==='sticker'){ // one hand: pinch to pick up the tape, release on a cord to stick it
+        if(!was&&h.pinched){fire('pointerdown',h.pos,77+i);h.down=true}
+        else if(was&&!h.pinched&&h.down){fire('pointerup',h.pos,77+i);h.down=false}
+      }
+    });
+    if(practice)practiceTick();
+    else if(H[0])fire('pointermove',H[0].pos,90); // lets the flat tape follow the hand
+    if(m==='weave'){
+      const both=H.length>=2&&H[0].pinched&&H[1].pinched;
+      if(!both)tieLock=false;
+      else if(!tieLock&&Math.hypot(H[0].pos.x-H[1].pos.x,H[0].pos.y-H[1].pos.y)<TOUCH){
+        // the cord runs from where one hand picked it up, along both hands' paths, to where the other did
+        const path=[...H[0].trail,...H[1].trail.slice().reverse()];
+        fire('pointerdown',path[0]);path.slice(1,-1).forEach(p=>fire('pointermove',p));fire('pointerup',path[path.length-1]);
+        tieLock=true; // let go with either hand before tying the next cord
+      }
+    }
+  }
+  drawHands();requestAnimationFrame(tick);
+}
+function drawHands(){
+  const W=hand.width,Hh=hand.height;hx.clearRect(0,0,W,Hh);
+  hx.lineCap='round';hx.lineJoin='round';
+  const m=practice?'practice':mode();
+  if(practice){
+    hx.fillStyle='rgba(255,250,241,.9)';hx.fillRect(0,0,W,Hh);
+    const kx=k=>k.x*W,ky=k=>k.y*Hh;
+    hx.beginPath();hx.moveTo(kx(KNOTS[0]),ky(KNOTS[0]));
+    if(practice.tied)hx.quadraticCurveTo(W/2,Hh*.62,kx(KNOTS[1]),ky(KNOTS[1]));else{hx.lineTo(kx(KNOTS[0])+W*.12,ky(KNOTS[0])+18);hx.moveTo(kx(KNOTS[1]),ky(KNOTS[1]));hx.lineTo(kx(KNOTS[1])-W*.12,ky(KNOTS[1])+18)}
+    hx.strokeStyle='#33313b';hx.lineWidth=9;hx.stroke();hx.strokeStyle=practice.tied?'#4fae6a':'#e3c08a';hx.lineWidth=5;hx.stroke();
+    KNOTS.forEach((k,i)=>{hx.beginPath();hx.arc(kx(k),ky(k),16,0,7);hx.fillStyle='#c99b62';hx.fill();hx.strokeStyle='#33313b';hx.lineWidth=2.5;hx.stroke();
+      hx.beginPath();hx.arc(kx(k),ky(k),34,0,7);hx.setLineDash([8,7]);hx.strokeStyle='#4fae6a';hx.lineWidth=3;hx.stroke();hx.setLineDash([]);
+      hx.font='34px Gaegu, cursive';hx.textAlign='center';hx.fillStyle='#2a6fd6';hx.fillText(i?'right hand':'left hand',kx(k),ky(k)+70)});
+    // the current step, large, in the middle of the practice card
+    if(practice.step<STEPS.length){
+      const t0=STEPS[practice.step].say.replace(/^Practice: /,''),txt=t0[0].toUpperCase()+t0.slice(1),words=txt.split(' '),lines=[];let line='';
+      hx.font='bold 46px Gaegu, cursive';
+      for(const w of words){const t=line?line+' '+w:w;if(hx.measureText(t).width>W*.62&&line){lines.push(line);line=w}else line=t}lines.push(line);
+      hx.textAlign='center';hx.fillStyle='#77727f';hx.font='30px Gaegu, cursive';hx.fillText(`Practice · step ${practice.step+1} of ${STEPS.length}`,W/2,Hh*.16);
+      hx.fillStyle='#33313b';hx.font='bold 46px Gaegu, cursive';lines.forEach((l,i)=>hx.fillText(l,W/2,Hh*.16+58+i*52));
+    }
+  }
+  if((m==='weave'||m==='practice')&&H.length>=2&&H[0].pinched&&H[1].pinched){ // the cord stretched between your hands
+    const a=H[0].pos,b=H[1].pos,close=Math.hypot(a.x-b.x,a.y-b.y)<TOUCH*1.8;
+    hx.beginPath();hx.moveTo(a.x*W,a.y*Hh);hx.lineTo(b.x*W,b.y*Hh);hx.setLineDash([10,8]);hx.strokeStyle=close?'#4fae6a':'rgba(42,111,214,.6)';hx.lineWidth=5;hx.stroke();hx.setLineDash([]);
+  }
+  H.forEach(h=>{
+    if(h.pinched&&h.trail.length>1){hx.beginPath();h.trail.forEach((p,i)=>i?hx.lineTo(p.x*W,p.y*Hh):hx.moveTo(p.x*W,p.y*Hh));hx.strokeStyle='rgba(42,111,214,.3)';hx.lineWidth=9;hx.stroke()}
+    const x=h.pos.x*W,y=h.pos.y*Hh;
+    hx.beginPath();hx.arc(x,y,h.pinched?12:22,0,7);hx.fillStyle=h.pinched?'#f2582f':'rgba(255,250,241,.55)';hx.fill();hx.strokeStyle='#33313b';hx.lineWidth=2.5;hx.stroke();
+    if(!h.pinched){hx.beginPath();hx.arc(x,y,4,0,7);hx.fillStyle='#33313b';hx.fill()}
+  });
+}
+</script>
